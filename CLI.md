@@ -35,16 +35,16 @@ Other options:
        Use SEP instead of non-blank to blank transition.
 -u, --unique
        Output only the first of an equal run.
---totalOrder PCNT NUM_SAMPLES MAX_SPLITS
+--total-order PCNT NUM_SAMPLES MAX_SPLITS
        Produce total order across all reducer files.
          PCNT = Probability with which a key will be chosen (range 0.0 - 1.0).
          NUM_SAMPLES = Number of samples which will be extracted.
          MAX_SPLITS = Number of input splits to extract samples from.
---mapCodec CODEC
+--map-codec CODEC
        Compression codec for map intermediary outputs.
 --codec CODEC
        Compression codec for final outputs.
---lzopIndex
+--lzop-index
        Creates LZOP indexes for the output files.
 </code></pre>
 
@@ -55,7 +55,9 @@ First copy the bundled test file into HDFS
 
 To sort and write the sorted output in LZOP-compressed format (and create LZOP indexes!):
 
-<pre><code>shell$ hadoop jar hadoop-utils-<version>-jar-with-dependencies.jar com.alexholmes.hadooputils.sort.Sort --totalOrder 0.1 10000 10 --codec com.hadoop.compression.lzo.LzopCodec --lzopIndex 300names.txt 300names-sorted
+<pre><code>shell$ hadoop jar hadoop-utils-<version>-jar-with-dependencies.jar com.alexholmes.hadooputils.sort.Sort \
+        -r 2 --total-order 0.1 10000 10 --codec com.hadoop.compression.lzo.LzopCodec --lzopIndex \
+        300names.txt 300names-sorted
 shell$ hadoop fs -ls 300names-sorted
 Found 6 items
 -rw-r--r--   1 aholmes supergroup          0 2012-09-08 21:20 /user/aholmes/300names-sorted/_SUCCESS

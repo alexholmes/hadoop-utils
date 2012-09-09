@@ -75,16 +75,16 @@ public class Sort<K, V> extends Configured implements Tool {
             "         Use SEP instead of non-blank to blank transition.",
             "-u, --unique",
             "         Output only the first of an equal run.",
-            "--totalOrder PCNT NUM_SAMPLES MAX_SPLITS",
+            "--total-order PCNT NUM_SAMPLES MAX_SPLITS",
             "         Produce total order across all reducer files.",
             "           PCNT = Probability with which a key will be chosen (range 0.0 - 1.0).",
             "           NUM_SAMPLES = Number of samples which will be extracted.",
             "           MAX_SPLITS = Number of input splits to extract samples from.",
-            "--mapCodec CODEC",
+            "--map-codec CODEC",
             "         Compression codec for map intermediary outputs.",
             "--codec CODEC",
             "         Compression codec for final outputs.",
-            "--lzopIndex",
+            "--lzop-index",
             "         Creates LZOP indexes for the output files.",
     };
 
@@ -138,7 +138,7 @@ public class Sort<K, V> extends Configured implements Tool {
                     }
                 } else if ("-t".equals(args[i]) || "--field-separator".equals(args[i])) {
                     sortConfig.setFieldSeparator(args[++i]);
-                } else if ("--totalOrder".equals(args[i])) {
+                } else if ("--total-order".equals(args[i])) {
                     double pcnt = Double.parseDouble(args[++i]);
                     int numSamples = Integer.parseInt(args[++i]);
                     int maxSplits = Integer.parseInt(args[++i]);
@@ -146,13 +146,11 @@ public class Sort<K, V> extends Configured implements Tool {
                         maxSplits = Integer.MAX_VALUE;
                     }
                     sampler = new InputSampler.RandomSampler<K, V>(pcnt, numSamples, maxSplits);
-                } else if ("--mapCodec".equals(args[i])) {
+                } else if ("--map-codec".equals(args[i])) {
                     mapCodecClass = (Class<? extends CompressionCodec>) Class.forName(args[++i]);
                 } else if ("--codec".equals(args[i])) {
                     codecClass = (Class<? extends CompressionCodec>) Class.forName(args[++i]);
-                } else if ("--codec".equals(args[i])) {
-                    codecClass = (Class<? extends CompressionCodec>) Class.forName(args[++i]);
-                } else if ("--lzopIndex".equals(args[i])) {
+                } else if ("--lzop-index".equals(args[i])) {
                     createLzopIndex = true;
                 } else {
                     otherArgs.add(args[i]);
