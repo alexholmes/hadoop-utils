@@ -7,7 +7,7 @@ command-line.
 
 ## License
 
-Apache licensed (see contents of file `LICENSE`).
+Apache version 2.0 (for more details look at [LICENSE](https://github.com/alexholmes/hadoop-utils/blob/master/LICENSE)).
 
 ## Usage
 
