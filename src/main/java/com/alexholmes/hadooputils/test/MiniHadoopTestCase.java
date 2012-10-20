@@ -21,6 +21,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Allows easy use of the {@link MiniHadoop} in JUnit test cases.
@@ -40,7 +41,21 @@ public abstract class MiniHadoopTestCase {
      */
     @Before
     public void setUp() throws Exception {
-        miniHadoop = new MiniHadoop(new Configuration(), 1, 1, getTestDataDir());
+        startup(new Configuration(), 2, 2, getTestDataDir());
+    }
+
+    /**
+     * Start up the Hadoop in-memory cluster.
+     *
+     * @param config       the Hadoop configuration
+     * @param taskTrackers number of task trackers to start
+     * @param dataNodes    number of data nodes to start
+     * @param tmpDir       the temporary directory which the Hadoop cluster will use for storage
+     * @throws IOException thrown if the base directory cannot be set.
+     */
+    protected void startup(final Configuration config, final int taskTrackers, final int dataNodes,
+                           final File tmpDir) throws IOException {
+        miniHadoop = new MiniHadoop(config, taskTrackers, dataNodes, tmpDir);
     }
 
     /**
@@ -51,6 +66,15 @@ public abstract class MiniHadoopTestCase {
      */
     @After
     public void tearDown() throws Exception {
+        shutdown();
+    }
+
+    /**
+     * Shutdown Hadoop.
+     *
+     * @throws Exception on error
+     */
+    protected void shutdown() throws Exception {
         miniHadoop.close();
     }
 

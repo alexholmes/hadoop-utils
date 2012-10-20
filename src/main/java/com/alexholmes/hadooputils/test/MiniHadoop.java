@@ -32,12 +32,19 @@ import java.io.IOException;
  */
 public class MiniHadoop {
 
-    private final int taskTrackers;
-    private final int dataNodes;
-    private final Configuration config;
-    private final File tmpDir;
+    /**
+     * The in-memory HDFS cluster.
+     */
     private MiniDFSCluster dfsCluster = null;
+
+    /**
+     * The in-memory MapReduce cluster.
+     */
     private MiniMRCluster mrCluster = null;
+
+    /**
+     * A handle to the in-memory HDFS.
+     */
     private FileSystem fileSystem = null;
 
     /**
@@ -47,17 +54,15 @@ public class MiniHadoop {
      * The DFS will be formatted regardless if there was one or not before in the
      * given location.
      *
-     * @param taskTrackers number of task trackers to start when using cluster
-     * @param taskTrackers number of task trackers to start when using cluster
-     * @param dataNodes number of data nodes to start when using DFS
+     * @param config the Hadoop configuration
+     * @param taskTrackers number of task trackers to start
+     * @param dataNodes number of data nodes to start
+     * @param tmpDir the temporary directory which the Hadoop cluster will use for storage
      * @throws IOException thrown if the base directory cannot be set.
      */
-    public MiniHadoop(Configuration config, final int taskTrackers, final int dataNodes, final File tmpDir)
+    public MiniHadoop(final Configuration config, final int taskTrackers, final int dataNodes,
+                      final File tmpDir)
             throws IOException {
-        this.config = config;
-        this.tmpDir = tmpDir;
-        this.taskTrackers = taskTrackers;
-        this.dataNodes = dataNodes;
 
         if (taskTrackers < 1) {
             throw new IllegalArgumentException(
@@ -92,7 +97,7 @@ public class MiniHadoop {
     /**
      * Destroys the MiniDFSCluster and MiniMRCluster Hadoop instance.
      *
-     * @throws Exception
+     * @throws Exception if shutdown fails
      */
     public void close() throws Exception {
         mrCluster.shutdown();
