@@ -22,6 +22,8 @@ import org.apache.hadoop.fs.Path;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -48,6 +50,24 @@ public final class FileUtils {
         InputStream stream = fs.open(p);
         try {
             return IOUtils.readLines(stream);
+        } finally {
+            stream.close();
+        }
+    }
+
+    /**
+     * Writes the array list into a file as newline-separated lines.
+     *
+     * @param fs a Hadoop file system
+     * @param p  the file path
+     * @return array of lines to write to the file
+     * @throws java.io.IOException if something goes wrong
+     */
+    public static void writeLines(Collection<?> lines, final FileSystem fs, final Path p)
+            throws IOException {
+        OutputStream stream = fs.create(p);
+        try {
+            IOUtils.writeLines(lines, IOUtils.LINE_SEPARATOR, stream);
         } finally {
             stream.close();
         }
