@@ -36,6 +36,12 @@ import java.util.List;
  * number of SequenceFiles that are at or smaller than the HDFS block size, and you wish to have a sensible
  * cap on the number of reducers that run.
  *
+ * Bear in mind that by default the {@link CombineFileInputFormat} will only create a single input split
+ * for each node, which means only 1 mapper for the job will run on the node (under normal operating conditions).
+ * Therefore the default behavior impacts the mapper parallelism. You can cap the maximum number of
+ * bytes in an input split by either calling {@link CombineFileInputFormat#setMaxSplitSize(long)},
+ * or by setting the configurable property {@code mapreduce.input.fileinputformat.split.maxsize}.
+ *
  * @param <K> The type of the key in the SequenceFile.
  * @param <V> The type of the value in the SequenceFile.
  */
