@@ -16,7 +16,7 @@
 
 package com.alexholmes.hadooputils.combine.seqfile.mapred;
 
-import com.alexholmes.hadooputils.combine.common.mapred.CombineSequenceFileRecordReader;
+import com.alexholmes.hadooputils.combine.common.mapred.CommonCombineRecordReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -73,7 +73,7 @@ public class CombineSequenceFileTest {
         InputSplit[] splits = inputFormat.getSplits(jobConf, 1);
         assertEquals(1, splits.length);
 
-        CombineSequenceFileRecordReader<Text, Text> rr = (CombineSequenceFileRecordReader<Text, Text>) inputFormat.getRecordReader(splits[0], jobConf, new DummyReporter());
+        CommonCombineRecordReader<Text, Text> rr = (CommonCombineRecordReader<Text, Text>) inputFormat.getRecordReader(splits[0], jobConf, new DummyReporter());
         Text k = new Text();
         Text v = new Text();
         assertTrue(rr.next(k, v));
@@ -105,7 +105,7 @@ public class CombineSequenceFileTest {
         InputSplit[] splits = inputFormat.getSplits(jobConf, 1);
         assertEquals(1, splits.length);
 
-        CombineSequenceFileRecordReader<Text, Text> rr = (CombineSequenceFileRecordReader<Text, Text>) inputFormat.getRecordReader(splits[0], jobConf, new DummyReporter());
+        CommonCombineRecordReader<Text, Text> rr = (CommonCombineRecordReader<Text, Text>) inputFormat.getRecordReader(splits[0], jobConf, new DummyReporter());
         Text k = new Text();
         Text v = new Text();
 

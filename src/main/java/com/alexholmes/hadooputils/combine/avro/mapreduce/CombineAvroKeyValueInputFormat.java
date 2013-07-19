@@ -33,7 +33,19 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
+ * An {@link org.apache.hadoop.mapreduce.InputFormat} which can feed multiple
+ * input splits for Avro container files of key/value generic records  to individual mappers. This is useful in situations where you have a large
+ * number of Avro files that are at or smaller than the HDFS block size, and you wish to have a sensible
+ * cap on the number of reducers that run.
  *
+ * Bear in mind that by default the {@link CombineFileInputFormat} will only create a single input split
+ * for each node, which means only 1 mapper for the job will run on the node (under normal operating conditions).
+ * Therefore the default behavior impacts the mapper parallelism. You can cap the maximum number of
+ * bytes in an input split by either calling {@link CombineFileInputFormat#setMaxSplitSize(long)},
+ * or by setting the configurable property {@code mapreduce.input.fileinputformat.split.maxsize}.
+ *
+ * @param <K> The type of the key in the Avro file.
+ * @param <V> The type of the value in the Avro file.
  */
 public class CombineAvroKeyValueInputFormat<K, V> extends CombineFileInputFormat<AvroKey<K>, AvroValue<V>> {
     private static final Logger LOG = LoggerFactory.getLogger(CombineAvroKeyValueInputFormat.class);
@@ -42,6 +54,7 @@ public class CombineAvroKeyValueInputFormat<K, V> extends CombineFileInputFormat
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("unchecked")
     public RecordReader<AvroKey<K>, AvroValue<V>> createRecordReader(
             InputSplit split, TaskAttemptContext context) throws IOException {
         final Schema keyReaderSchema = AvroJob.getInputKeySchema(HadoopCompat.getConfiguration(context));

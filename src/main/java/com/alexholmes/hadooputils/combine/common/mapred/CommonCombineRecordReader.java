@@ -33,8 +33,8 @@ import java.io.IOException;
  * @param <K> The type of the key in the RecordReader.
  * @param <V> The type of the value in the RecordReader.
  */
-public class CombineSequenceFileRecordReader<K, V> implements RecordReader<K, V> {
-    private static final Log LOG = LogFactory.getLog(CombineSequenceFileRecordReader.class);
+public class CommonCombineRecordReader<K, V> implements RecordReader<K, V> {
+    private static final Log LOG = LogFactory.getLog(CommonCombineRecordReader.class);
 
     protected Configuration conf;
     protected int currentSplit = -1;
@@ -51,7 +51,7 @@ public class CombineSequenceFileRecordReader<K, V> implements RecordReader<K, V>
      * @param engineerer the RecordReader engineering instance
      * @throws IOException on io error
      */
-    public CombineSequenceFileRecordReader(Configuration conf, CombineFileSplit split, RecordReaderEngineerer<K, V> engineerer) throws IOException {
+    public CommonCombineRecordReader(Configuration conf, CombineFileSplit split, RecordReaderEngineerer<K, V> engineerer) throws IOException {
         this.conf = conf;
 
         this.split = split;
