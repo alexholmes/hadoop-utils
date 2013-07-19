@@ -16,6 +16,7 @@
 
 package com.alexholmes.hadooputils.combine.seqfile.mapreduce;
 
+import com.alexholmes.hadooputils.util.HadoopCompat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -51,7 +52,7 @@ public class CombineSequenceFileRecordReader<K, V> extends RecordReader {
         this.context = context;
 
         this.split = (CombineFileSplit) split;
-        conf = context.getConfiguration();
+        conf = HadoopCompat.getConfiguration(context);
 
         for (int i=0; i < this.split.getPaths().length; i++) {
             totalBytes += this.split.getLength(i);
