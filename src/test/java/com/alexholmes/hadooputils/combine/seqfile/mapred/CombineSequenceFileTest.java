@@ -16,6 +16,7 @@
 
 package com.alexholmes.hadooputils.combine.seqfile.mapred;
 
+import com.alexholmes.hadooputils.combine.common.mapred.CombineSequenceFileRecordReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -28,7 +29,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
-import java.util.List;
 
 import static org.junit.Assert.*;
 

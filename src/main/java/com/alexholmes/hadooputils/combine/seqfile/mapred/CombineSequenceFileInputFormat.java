@@ -16,6 +16,8 @@
 
 package com.alexholmes.hadooputils.combine.seqfile.mapred;
 
+import com.alexholmes.hadooputils.combine.common.mapred.CombineSequenceFileRecordReader;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -66,9 +68,16 @@ public class CombineSequenceFileInputFormat<K, V> extends CombineFileInputFormat
         return files;
     }
 
+    @SuppressWarnings("unchecked")
     public RecordReader<K, V> getRecordReader(InputSplit split, JobConf job, Reporter reporter) throws IOException {
         reporter.setStatus(split.toString());
-        return new CombineSequenceFileRecordReader<K, V>(job, (CombineFileSplit) split);
+
+        return new CombineSequenceFileRecordReader(job, (CombineFileSplit) split, new CombineSequenceFileRecordReader.RecordReaderEngineerer() {
+            @Override
+            public RecordReader createRecordReader(Configuration conf, FileSplit split) throws IOException {
+                return new SequenceFileRecordReader<K, V>(conf, split);
+            }
+        });
     }
 
 }

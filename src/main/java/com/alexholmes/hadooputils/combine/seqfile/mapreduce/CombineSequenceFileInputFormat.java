@@ -16,6 +16,7 @@
 
 package com.alexholmes.hadooputils.combine.seqfile.mapreduce;
 
+import com.alexholmes.hadooputils.combine.common.mapreduce.CommonCombineFileRecordReader;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -26,6 +27,7 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileRecordReader;
 
 import java.io.IOException;
 import java.util.List;
@@ -48,7 +50,12 @@ import java.util.List;
 public class CombineSequenceFileInputFormat<K, V> extends CombineFileInputFormat {
     @Override
     public RecordReader createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException {
-        return new CombineSequenceFileRecordReader<K, V>();
+        return new CommonCombineFileRecordReader<K, V>(new CommonCombineFileRecordReader.RecordReaderEngineerer<K, V>() {
+            @Override
+            public RecordReader<K, V> createRecordReader() {
+                return new SequenceFileRecordReader<K, V>();
+            }
+        });
     }
 
     @Override

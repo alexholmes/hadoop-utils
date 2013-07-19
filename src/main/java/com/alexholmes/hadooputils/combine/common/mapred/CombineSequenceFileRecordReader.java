@@ -14,33 +14,33 @@
  * limitations under the License.
  */
 
-package com.alexholmes.hadooputils.combine.seqfile.mapred;
+package com.alexholmes.hadooputils.combine.common.mapred;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.SequenceFileRecordReader;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 
 import java.io.IOException;
 
 /**
  * A {@link RecordReader} that works with {@link CombineFileSplit}'s generated via
- * {@link CombineSequenceFileInputFormat}. All this class really does is coordinate creation of
- * {@link SequenceFileRecordReader}'s for each split contained within the {@link CombineFileSplit}.
+ * {@link org.apache.hadoop.mapred.lib.CombineFileInputFormat}. All this class really does is coordinate creation of
+ * {@link RecordReader}'s for each split contained within the {@link CombineFileSplit}.
  *
- * @param <K> The type of the key in the SequenceFile.
- * @param <V> The type of the value in the SequenceFile.
+ * @param <K> The type of the key in the RecordReader.
+ * @param <V> The type of the value in the RecordReader.
  */
 public class CombineSequenceFileRecordReader<K, V> implements RecordReader<K, V> {
     private static final Log LOG = LogFactory.getLog(CombineSequenceFileRecordReader.class);
 
     protected Configuration conf;
     protected int currentSplit = -1;
-    protected SequenceFileRecordReader<K, V> reader;
+    protected RecordReader<K, V> reader;
     protected CombineFileSplit split;
+    private final RecordReaderEngineerer<K, V> engineerer;
     private long totalBytes;
 
     /**
@@ -48,12 +48,14 @@ public class CombineSequenceFileRecordReader<K, V> implements RecordReader<K, V>
      *
      * @param conf  the Hadoop config
      * @param split the input split
+     * @param engineerer the RecordReader engineering instance
      * @throws IOException on io error
      */
-    public CombineSequenceFileRecordReader(Configuration conf, CombineFileSplit split) throws IOException {
+    public CombineSequenceFileRecordReader(Configuration conf, CombineFileSplit split, RecordReaderEngineerer<K, V> engineerer) throws IOException {
         this.conf = conf;
 
         this.split = split;
+        this.engineerer = engineerer;
 
         for (int i = 0; i < this.split.getPaths().length; i++) {
             totalBytes += this.split.getLength(i);
@@ -90,7 +92,7 @@ public class CombineSequenceFileRecordReader<K, V> implements RecordReader<K, V>
                 split.getLength(currentSplit),
                 split.getLocations() == null || split.getLocations().length - 1 < currentSplit ? null : new String[]{split.getLocations()[currentSplit]});
 
-        reader = new SequenceFileRecordReader<K, V>(conf, fileSplit);
+        reader = engineerer.createRecordReader(conf, fileSplit);
         return true;
     }
 
@@ -151,5 +153,22 @@ public class CombineSequenceFileRecordReader<K, V> implements RecordReader<K, V>
             reader.close();
             reader = null;
         }
+    }
+
+    /**
+     * Create {@link RecordReader} instances.
+     *
+     * @param <K> the {@link RecordReader} key type
+     * @param <V> the {@link RecordReader} value type
+     */
+    public static interface RecordReaderEngineerer<K, V> {
+        /**
+         * Create an instance of a {@link RecordReader}.
+         *
+         * @param conf the Hadoop conf
+         * @param split the input split
+         * @return the RR
+         */
+        public RecordReader<K, V> createRecordReader(Configuration conf, FileSplit split) throws IOException;
     }
 }

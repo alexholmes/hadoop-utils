@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alexholmes.hadooputils.combine.seqfile.mapreduce;
+package com.alexholmes.hadooputils.combine.common.mapreduce;
 
 import com.alexholmes.hadooputils.util.HadoopCompat;
 import org.apache.commons.logging.Log;
@@ -25,27 +25,39 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.CombineFileSplit;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileRecordReader;
 
 import java.io.IOException;
 
 /**
  * A {@link RecordReader} that works with {@link CombineFileSplit}'s generated via
- * {@link CombineSequenceFileInputFormat}. All this class really does is coordinate creation of
- * {@link SequenceFileRecordReader}'s for each split contained within the {@link CombineFileSplit}.
+ * {@link org.apache.hadoop.mapreduce.lib.input.CombineFileInputFormat}.
+ * <p/>
+ * All this class really does is coordinate creation of
+ * {@link RecordReader}'s for each split contained within the
+ * {@link org.apache.hadoop.mapreduce.lib.input.CombineFileSplit}.
  *
  * @param <K> The type of the key in the SequenceFile.
  * @param <V> The type of the value in the SequenceFile.
  */
-public class CombineSequenceFileRecordReader<K, V> extends RecordReader {
-    private static final Log LOG = LogFactory.getLog(CombineSequenceFileRecordReader.class);
+public class CommonCombineFileRecordReader<K, V> extends RecordReader {
+    private static final Log LOG = LogFactory.getLog(CommonCombineFileRecordReader.class);
 
     protected Configuration conf;
     protected int currentSplit = -1;
-    protected SequenceFileRecordReader<K, V> reader;
+    protected RecordReader<K, V> reader;
     protected CombineFileSplit split;
     private TaskAttemptContext context;
     private long totalBytes;
+    private final RecordReaderEngineerer<K, V> engineerer;
+
+    /**
+     * Ctor.
+     *
+     * @param engineerer the engineerer that will create {@link RecordReader} instances
+     */
+    public CommonCombineFileRecordReader(RecordReaderEngineerer<K, V> engineerer) {
+        this.engineerer = engineerer;
+    }
 
     @Override
     public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
@@ -54,7 +66,7 @@ public class CombineSequenceFileRecordReader<K, V> extends RecordReader {
         this.split = (CombineFileSplit) split;
         conf = HadoopCompat.getConfiguration(context);
 
-        for (int i=0; i < this.split.getPaths().length; i++) {
+        for (int i = 0; i < this.split.getPaths().length; i++) {
             totalBytes += this.split.getLength(i);
 
             if (LOG.isDebugEnabled()) {
@@ -70,7 +82,7 @@ public class CombineSequenceFileRecordReader<K, V> extends RecordReader {
      * once we have exhausted all the splits.
      *
      * @return true if we successfully moved on to the next split
-     * @throws IOException if we hit io errors
+     * @throws java.io.IOException  if we hit io errors
      * @throws InterruptedException if we get interrupted
      */
     public boolean nextReader() throws IOException, InterruptedException {
@@ -90,7 +102,7 @@ public class CombineSequenceFileRecordReader<K, V> extends RecordReader {
                 split.getLength(currentSplit),
                 split.getLocations() == null || split.getLocations().length - 1 < currentSplit ? null : new String[]{split.getLocations()[currentSplit]});
 
-        reader = new SequenceFileRecordReader<K, V>();
+        reader = engineerer.createRecordReader();
         reader.initialize(fileSplit, context);
         return true;
     }
@@ -108,12 +120,12 @@ public class CombineSequenceFileRecordReader<K, V> extends RecordReader {
     }
 
     @Override
-    public K getCurrentKey() {
+    public K getCurrentKey() throws IOException, InterruptedException {
         return reader.getCurrentKey();
     }
 
     @Override
-    public V getCurrentValue() {
+    public V getCurrentValue() throws IOException, InterruptedException {
         return reader.getCurrentValue();
     }
 
@@ -123,7 +135,7 @@ public class CombineSequenceFileRecordReader<K, V> extends RecordReader {
      * @return 0.0 to 1.0 of the input byte range
      */
     @Override
-    public float getProgress() throws IOException {
+    public float getProgress() throws IOException, InterruptedException {
         if (reader == null) {
             return 1.0f;
         }
@@ -147,5 +159,20 @@ public class CombineSequenceFileRecordReader<K, V> extends RecordReader {
             reader.close();
             reader = null;
         }
+    }
+
+    /**
+     * Create {@link RecordReader} instances.
+     *
+     * @param <K> the {@link RecordReader} key type
+     * @param <V> the {@link RecordReader} value type
+     */
+    public static interface RecordReaderEngineerer<K, V> {
+        /**
+         * Create an instance of a {@link RecordReader}.
+         *
+         * @return the RR
+         */
+        public RecordReader<K, V> createRecordReader();
     }
 }

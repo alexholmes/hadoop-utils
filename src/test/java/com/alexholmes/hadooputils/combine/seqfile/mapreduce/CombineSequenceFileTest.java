@@ -23,10 +23,7 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.mapreduce.*;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,7 +79,7 @@ public class CombineSequenceFileTest {
         Configuration conf1 = new Configuration();
         TaskAttemptContext context1 = new TaskAttemptContext(conf1, taskId);
 
-        CombineSequenceFileRecordReader<Text, Text> rr = (CombineSequenceFileRecordReader<Text, Text>) inputFormat.createRecordReader(splits.get(0), context1);
+        RecordReader<Text, Text> rr = inputFormat.createRecordReader(splits.get(0), context1);
         rr.initialize(splits.get(0), context1);
         assertTrue(rr.nextKeyValue());
 
@@ -117,7 +114,7 @@ public class CombineSequenceFileTest {
         Configuration conf1 = new Configuration();
         TaskAttemptContext context1 = new TaskAttemptContext(conf1, taskId);
 
-        CombineSequenceFileRecordReader<Text, Text> rr = (CombineSequenceFileRecordReader<Text, Text>) inputFormat.createRecordReader(splits.get(0), context1);
+        RecordReader<Text, Text> rr = inputFormat.createRecordReader(splits.get(0), context1);
         rr.initialize(splits.get(0), context1);
         assertTrue(rr.nextKeyValue());
 
