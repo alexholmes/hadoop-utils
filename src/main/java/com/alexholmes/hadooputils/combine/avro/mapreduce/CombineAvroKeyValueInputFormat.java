@@ -17,6 +17,7 @@
 package com.alexholmes.hadooputils.combine.avro.mapreduce;
 
 import com.alexholmes.hadooputils.combine.common.mapreduce.CommonCombineFileRecordReader;
+import com.alexholmes.hadooputils.combine.common.mapreduce.SplitMetricsCombineInputFormat;
 import com.alexholmes.hadooputils.util.HadoopCompat;
 import org.apache.avro.Schema;
 import org.apache.avro.mapred.AvroKey;
@@ -47,7 +48,7 @@ import java.io.IOException;
  * @param <K> The type of the key in the Avro file.
  * @param <V> The type of the value in the Avro file.
  */
-public class CombineAvroKeyValueInputFormat<K, V> extends CombineFileInputFormat<AvroKey<K>, AvroValue<V>> {
+public class CombineAvroKeyValueInputFormat<K, V> extends SplitMetricsCombineInputFormat<AvroKey<K>, AvroValue<V>> {
     private static final Logger LOG = LoggerFactory.getLogger(CombineAvroKeyValueInputFormat.class);
 
     /**

@@ -17,6 +17,7 @@
 package com.alexholmes.hadooputils.combine.seqfile.mapred;
 
 import com.alexholmes.hadooputils.combine.common.mapred.CommonCombineRecordReader;
+import com.alexholmes.hadooputils.combine.common.mapred.SplitMetricsCombineInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -44,7 +45,7 @@ import java.io.IOException;
  * @param <K> The type of the key in the SequenceFile.
  * @param <V> The type of the value in the SequenceFile.
  */
-public class CombineSequenceFileInputFormat<K, V> extends CombineFileInputFormat<K, V> {
+public class CombineSequenceFileInputFormat<K, V> extends SplitMetricsCombineInputFormat<K, V> {
 
     /**
      * Ctor.

@@ -17,6 +17,7 @@
 package com.alexholmes.hadooputils.combine.avro.mapred;
 
 import com.alexholmes.hadooputils.combine.common.mapred.CommonCombineRecordReader;
+import com.alexholmes.hadooputils.combine.common.mapred.SplitMetricsCombineInputFormat;
 import org.apache.avro.mapred.AvroOutputFormat;
 import org.apache.avro.mapred.AvroRecordReader;
 import org.apache.avro.mapred.AvroWrapper;
@@ -45,7 +46,7 @@ import java.util.List;
  *
  * @param <T> The type of the record in the Avro file.
  */
-public class CombineAvroInputFormat<T> extends CombineFileInputFormat<AvroWrapper<T>, NullWritable> {
+public class CombineAvroInputFormat<T> extends SplitMetricsCombineInputFormat<AvroWrapper<T>, NullWritable> {
 
     @Override
     protected FileStatus[] listStatus(JobConf job) throws IOException {

@@ -17,6 +17,7 @@
 package com.alexholmes.hadooputils.combine.seqfile.mapreduce;
 
 import com.alexholmes.hadooputils.combine.common.mapreduce.CommonCombineFileRecordReader;
+import com.alexholmes.hadooputils.combine.common.mapreduce.SplitMetricsCombineInputFormat;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -47,7 +48,7 @@ import java.util.List;
  * @param <K> The type of the key in the SequenceFile.
  * @param <V> The type of the value in the SequenceFile.
  */
-public class CombineSequenceFileInputFormat<K, V> extends CombineFileInputFormat {
+public class CombineSequenceFileInputFormat<K, V> extends SplitMetricsCombineInputFormat {
     @Override
     public RecordReader createRecordReader(InputSplit split, TaskAttemptContext context) throws IOException {
         return new CommonCombineFileRecordReader<K, V>(new CommonCombineFileRecordReader.RecordReaderEngineerer<K, V>() {
