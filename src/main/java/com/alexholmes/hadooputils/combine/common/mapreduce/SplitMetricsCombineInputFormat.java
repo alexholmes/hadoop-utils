@@ -19,6 +19,7 @@ package com.alexholmes.hadooputils.combine.common.mapreduce;
 import com.alexholmes.hadooputils.combine.common.CombineFileSplitAdapter;
 import com.alexholmes.hadooputils.combine.common.LoggerSink;
 import com.alexholmes.hadooputils.combine.common.MetricsSink;
+import com.alexholmes.hadooputils.util.HadoopCompat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -47,8 +48,10 @@ public abstract class SplitMetricsCombineInputFormat<K, V> extends CombineFileIn
     public List<InputSplit> getSplits(JobContext job) throws IOException {
         List<InputSplit> splits = super.getSplits(job);
 
-        if (job.getConfiguration().getBoolean("hadooputils.combine.sink.enabled", false)) {
-            writeSplitsToSink(job.getConfiguration(), organizeSplitsByLocation(splits));
+        Configuration conf = HadoopCompat.getConfiguration(job);
+
+        if (conf.getBoolean("hadooputils.combine.sink.enabled", false)) {
+            writeSplitsToSink(conf, organizeSplitsByLocation(splits));
         }
 
         return splits;
