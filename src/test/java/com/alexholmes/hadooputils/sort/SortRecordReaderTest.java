@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Alex Holmes
+ * Modified work Copyright 2014 Mark Cusack
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,67 +18,113 @@
 package com.alexholmes.hadooputils.sort;
 
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Writable;
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class SortRecordReaderTest {
 
     @Test
     public void testDefaultExtractKey() throws IOException {
-        assertEquals("asd", SortRecordReader.extractKey(new Text("asd"),
+        Writable[] key = SortRecordReader.extractKey(new Text("asd"),
                 null, // start key
                 null, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(1, key.length);
+        assertEquals("asd", key[0].toString());
 
-        assertEquals("asd def", SortRecordReader.extractKey(new Text("asd def"),
+        key = SortRecordReader.extractKey(new Text("asd def"),
                 null, // start key
                 null, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(1, key.length);
+        assertEquals("asd def", key[0].toString());
     }
 
     @Test
     public void testStartKey() throws IOException {
-        assertEquals("asd", SortRecordReader.extractKey(new Text("asd"),
+        Writable[] key = SortRecordReader.extractKey(new Text("asd"),
                 1, // start key
                 null, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(1, key.length);
+        assertEquals("asd", key[0].toString());
 
-        assertEquals("asd def", SortRecordReader.extractKey(new Text("asd def"),
+        key = SortRecordReader.extractKey(new Text("asd def"),
                 1, // start key
                 null, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(2, key.length);
+        assertEquals("asd", key[0].toString());
+        assertEquals("def", key[1].toString());
 
-        assertEquals("asd def feg", SortRecordReader.extractKey(new Text("asd def feg"),
+        key = SortRecordReader.extractKey(new Text("asd def feg"),
                 1, // start key
                 null, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(3, key.length);
+        assertEquals("asd", key[0].toString());
+        assertEquals("def", key[1].toString());
+        assertEquals("feg", key[2].toString());
 
-        assertEquals("def", SortRecordReader.extractKey(new Text("asd def"),
+        key = SortRecordReader.extractKey(new Text("asd def"),
                 2, // start key
                 null, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(1, key.length);
+        assertEquals("def", key[0].toString());
 
-        assertEquals("def feg", SortRecordReader.extractKey(new Text("asd def feg"),
+        key = SortRecordReader.extractKey(new Text("asd def feg"),
                 2, // start key
                 null, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(2, key.length);
+        assertEquals("def", key[0].toString());
+
+        key = SortRecordReader.extractKey(new Text("asd def feg"),
+                3, // start key
+                null, // end key
+                " ", // separator
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(1, key.length);
+        assertEquals("feg", key[0].toString());
     }
 
     @Test(expected = IOException.class)
@@ -86,46 +133,71 @@ public class SortRecordReaderTest {
                 2, // start key
                 null, // end key
                 " ", // separator
-                false // ignore case
+                false, // ignore case
+                false // is numeric key
         );
     }
 
     @Test
     public void testStartEndKeys() throws IOException {
-        assertEquals("asd", SortRecordReader.extractKey(new Text("asd"),
+        Writable[] key = SortRecordReader.extractKey(new Text("asd"),
                 1, // start key
                 1, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(1, key.length);
+        assertEquals("asd", key[0].toString());
 
-        assertEquals("asd def", SortRecordReader.extractKey(new Text("asd def"),
+        key = SortRecordReader.extractKey(new Text("asd def"),
                 1, // start key
                 2, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(2, key.length);
+        assertEquals("asd", key[0].toString());
+        assertEquals("def", key[1].toString());
 
-        assertEquals("asd def feg", SortRecordReader.extractKey(new Text("asd def feg"),
+        key = SortRecordReader.extractKey(new Text("asd def feg"),
                 1, // start key
                 3, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(3, key.length);
+        assertEquals("asd", key[0].toString());
+        assertEquals("def", key[1].toString());
+        assertEquals("feg", key[2].toString());
 
-        assertEquals("def", SortRecordReader.extractKey(new Text("asd def"),
+        key = SortRecordReader.extractKey(new Text("asd def"),
                 2, // start key
                 2, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(1, key.length);
+        assertEquals("def", key[0].toString());
 
-        assertEquals("def feg", SortRecordReader.extractKey(new Text("asd def feg"),
+        key = SortRecordReader.extractKey(new Text("asd def feg"),
                 2, // start key
                 3, // end key
                 " ", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(2, key.length);
+        assertEquals("def", key[0].toString());
+        assertEquals("feg", key[1].toString());
     }
 
     @Test(expected = IOException.class)
@@ -134,34 +206,64 @@ public class SortRecordReaderTest {
                 1, // start key
                 2, // end key
                 " ", // separator
-                false // ignore case
+                false, // ignore case
+                false // is numeric key
         );
     }
 
     @Test
     public void testSeparator() throws IOException {
-        assertEquals("asd~def", SortRecordReader.extractKey(new Text("asd~def"),
+        Writable[] key = SortRecordReader.extractKey(new Text("asd~def"),
                 1, // start key
                 2, // end key
                 "~", // separator
-                false // ignore case
-        ).toString());
-
-        assertEquals("asd", SortRecordReader.extractKey(new Text("asd~def"),
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(2, key.length);
+        assertEquals("asd", key[0].toString());
+        assertEquals("def", key[1].toString());
+         
+        key = SortRecordReader.extractKey(new Text("asd~def"),
                 1, // start key
                 1, // end key
                 "~", // separator
-                false // ignore case
-        ).toString());
+                false, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(1, key.length);
+        assertEquals("asd", key[0].toString());
     }
 
     @Test
     public void testIgnoreCase() throws IOException {
-        assertEquals("aaabbb", SortRecordReader.extractKey(new Text("aaaBBB"),
+        Writable[] key = SortRecordReader.extractKey(new Text("aaaBBB"),
                 1, // start key
                 1, // end key
                 "~", // separator
-                true // ignore case
-        ).toString());
+                true, // ignore case
+                false // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(1, key.length);
+        assertEquals("aaabbb", key[0].toString());
     }
+
+    @Test
+    public void testNumeric() throws IOException {
+        Writable[] key = SortRecordReader.extractKey(new Text("1 2 3"),
+                1, // start key
+                1, // end key
+                " ", // separator
+                false, // ignore case
+                true // is numeric key
+        );
+        assertNotNull(key);
+        assertEquals(1, key.length);
+        assertTrue(key[0] instanceof LongWritable);
+        assertEquals(1, ((LongWritable)key[0]).get());
+    }
+
 }
