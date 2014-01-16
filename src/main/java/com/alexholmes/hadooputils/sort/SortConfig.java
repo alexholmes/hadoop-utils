@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Alex Holmes
+ * Modified work Copyright 2014 Mark Cusack
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +41,11 @@ public class SortConfig {
     private static final String UNIQUE = "sort.unique";
 
     /**
+     * Configuration for numerically sorted results.
+     */
+    private static final String NUMERIC = "sort.numeric";
+
+    /**
      * Configuration for the start key when sorting.
      */
     private static final String START_KEY = "sort.key.start";
@@ -53,6 +59,16 @@ public class SortConfig {
      * Configuration for the field separator when sorting.
      */
     private static final String FIELD_SEPARATOR = "sort.field.separator";
+
+    /**
+     * Configuration for the row separator when sorting.
+     */
+    private static final String ROW_SEPARATOR = "textinputformat.record.delimiter";
+
+    /**
+     * Configuration for the task timeout in seconds.
+     */
+    private static final String TASK_TIMEOUT = "mapred.task.timeout";
 
     /**
      * Constructor, which takes a {link Configuration} object.
@@ -101,6 +117,26 @@ public class SortConfig {
      */
     public boolean getUnique() {
         return config.getBoolean(UNIQUE, false);
+    }
+
+    /**
+     * Set whether records should be numerically sorted.
+     *
+     * @param numeric true if the output should be sorted numerically
+     * @return reference to this object
+     */
+    public SortConfig setNumeric(final boolean numeric) {
+        config.setBoolean(NUMERIC, numeric);
+        return this;
+    }
+
+    /**
+     * Get whether records should be numerically sorted.
+     *
+     * @return true if records should be numerically sorted
+     */
+    public boolean getNumeric() {
+        return config.getBoolean(NUMERIC, false);
     }
 
     /**
@@ -170,6 +206,48 @@ public class SortConfig {
      */
     public String getFieldSeparator(final String defaultValue) {
         return config.get(FIELD_SEPARATOR, defaultValue);
+    }
+
+    /**
+     * Set the row separator.
+     *
+     * @param key the row separator
+     * @return reference to this object
+     */
+    public SortConfig setRowSeparator(final String key) {
+        config.set(ROW_SEPARATOR, key);
+        return this;
+    }
+
+    /**
+     * Get the row separator.
+     *
+     * @param defaultValue the default value which is returned if the row separator isn't set
+     * @return the row separator
+     */
+    public String getRowSeparator(final String defaultValue) {
+        return config.get(ROW_SEPARATOR, defaultValue);
+    }
+
+    /**
+     * Set the task timeout.
+     *
+     * @param key the timeout in seconds
+     * @return reference to this object
+     */
+    public SortConfig setTaskTimeout(final Long key) {
+        config.setLong(TASK_TIMEOUT, key);
+        return this;
+    }
+
+    /**
+     * Get the task timeout.
+     *
+     * @param defaultValue the default value which is returned if the timeout isn't set
+     * @return the task timeout in seconds
+     */
+    public Long getTaskTimeout(final Long defaultValue) {
+        return config.getLong(TASK_TIMEOUT, defaultValue);
     }
 
     /**
