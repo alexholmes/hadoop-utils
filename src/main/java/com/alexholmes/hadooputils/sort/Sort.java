@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Alex Holmes
+ * Modified work Copyright 2014 Mark Cusack
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +63,8 @@ public class Sort<K, V> extends Configured implements Tool {
             "Ordering options:",
             "-f, --ignore-case",
             "         Fold lower case to upper case characters.",
+            "-n, --numeric-sort",
+            "         Compare according to string integer value.",
             "",
             "Other options:",
             "",
@@ -73,8 +76,12 @@ public class Sort<K, V> extends Configured implements Tool {
             "         Start a key at POS1 (origin 1), end it at POS2 (default end of line).",
             "-t, --field-separator SEP",
             "         Use SEP instead of non-blank to blank transition.",
+            "-z, --row-separator SEP",
+            "         End lines with SEP, not newline.",
             "-u, --unique",
             "         Output only the first of an equal run.",
+            "--task-timeout SECONDS",
+            "         Maximum time in seconds before unresponsive tasks timeout.",
             "--total-order PCNT NUM_SAMPLES MAX_SPLITS",
             "         Produce total order across all reducer files.",
             "           PCNT = Probability with which a key will be chosen (range 0.0 - 1.0).",
@@ -97,6 +104,10 @@ public class Sort<K, V> extends Configured implements Tool {
         System.out.println(StringUtils.join(USAGE, "\n"));
         ToolRunner.printGenericCommandUsage(System.out);
         return -1;
+    }
+
+    protected String replaceEscapedChars(String arg) {
+        return arg.replaceAll("\\\\n", "\n").replaceAll("\\\\r", "\r").replaceAll("\\\\t", "\t");
     }
 
     /**
@@ -136,8 +147,14 @@ public class Sort<K, V> extends Configured implements Tool {
                     if (parts.length > 1) {
                         sortConfig.setEndKey(Integer.valueOf(parts[1]));
                     }
+                } else if ("-n".equals(args[i]) || "--numeric-sort".equals(args[i])) {
+                    sortConfig.setNumeric(true);
                 } else if ("-t".equals(args[i]) || "--field-separator".equals(args[i])) {
-                    sortConfig.setFieldSeparator(args[++i]);
+                    sortConfig.setFieldSeparator(replaceEscapedChars(args[++i]));
+                } else if ("-z".equals(args[i]) || "--row-separator".equals(args[i])) {
+                    sortConfig.setRowSeparator(replaceEscapedChars(args[++i]));
+                } else if ("--task-timeout".equals(args[i])) {
+                    sortConfig.setTaskTimeout(Long.parseLong(args[++i]) * 1000L);
                 } else if ("--total-order".equals(args[i])) {
                     double pcnt = Double.parseDouble(args[++i]);
                     int numSamples = Integer.parseInt(args[++i]);
@@ -172,8 +189,9 @@ public class Sort<K, V> extends Configured implements Tool {
             return printUsage();
         }
 
-        if (runJob(new JobConf(sortConfig.getConfig()), numMapTasks, numReduceTasks, sampler,
-                codecClass, mapCodecClass, createLzopIndex, otherArgs.get(0), otherArgs.get(1))) {
+        if (runJob(new JobConf(sortConfig.getConfig()), numMapTasks, numReduceTasks,
+            sampler, codecClass, mapCodecClass, createLzopIndex, otherArgs.get(0), 
+            otherArgs.get(1))) {
             return 0;
         }
         return 1;
@@ -196,7 +214,7 @@ public class Sort<K, V> extends Configured implements Tool {
      * @throws IOException        if something went wrong
      * @throws URISyntaxException if a URI wasn't correctly formed
      */
-    public boolean runJob(final JobConf jobConf, final Integer numMapTasks,
+    public boolean runJob(final JobConf jobConf, final Integer numMapTasks, 
                           final Integer numReduceTasks, final InputSampler.Sampler<K, V> sampler,
                           final Class<? extends CompressionCodec> codecClass,
                           final Class<? extends CompressionCodec> mapCodecClass,
@@ -231,10 +249,19 @@ public class Sort<K, V> extends Configured implements Tool {
 
         jobConf.setInputFormat(SortInputFormat.class);
 
-        jobConf.setMapOutputKeyClass(Text.class);
+        // Configure for numeric or lexicographic sort orders
+        SortConfig sortConfig = new SortConfig(jobConf);
+        if (sortConfig.getNumeric()) {
+            jobConf.setOutputKeyComparatorClass(CompositeLongComparator.class);
+            jobConf.setMapOutputKeyClass(LongArrayWritable.class);
+        } else {
+            jobConf.setOutputKeyComparatorClass(CompositeTextComparator.class);
+            jobConf.setMapOutputKeyClass(TextArrayWritable.class);
+        }
         jobConf.setMapOutputValueClass(Text.class);
         jobConf.setOutputKeyClass(Text.class);
         jobConf.setOutputValueClass(Text.class);
+        jobConf.setOutputFormat(DelimitedTextOutputFormat.class);
 
         if (mapCodecClass != null) {
             jobConf.setMapOutputCompressorClass(mapCodecClass);
