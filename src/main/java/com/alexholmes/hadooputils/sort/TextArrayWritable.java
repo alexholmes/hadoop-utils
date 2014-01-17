@@ -16,6 +16,7 @@
 
 package com.alexholmes.hadooputils.sort;
 
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
@@ -28,11 +29,15 @@ public class TextArrayWritable extends ArrayWritable
     } 
 
     public int compareTo(TextArrayWritable o) {
-        String[] theseStrings = toStrings();
-        String[] thoseStrings = o.toStrings();
-        for (int i = 0; i < theseStrings.length; i++) {
-            if (!theseStrings[i].equals(thoseStrings[i])) {
-                return theseStrings[i].compareTo(thoseStrings[i]);
+        Writable[] theseTexts = get();
+        Writable[] thoseTexts = o.get();
+        int len = Math.min(theseTexts.length, thoseTexts.length);
+        for (int i = 0; i < len; i++) {
+            Text thisText = (Text) theseTexts[i];
+            Text thatText = (Text) thoseTexts[i];
+            int comp = thisText.compareTo(thatText);
+            if (comp != 0) {
+                return comp;
             }
         }
         return 0;

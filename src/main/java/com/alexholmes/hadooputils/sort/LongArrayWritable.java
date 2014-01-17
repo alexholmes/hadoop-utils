@@ -31,11 +31,13 @@ public class LongArrayWritable extends ArrayWritable
     public int compareTo(LongArrayWritable o) {
         Writable[] theseLongs = get();
         Writable[] thoseLongs = o.get();
-        for (int i = 0; i < theseLongs.length; i++) {
+        int len = Math.min(theseLongs.length, thoseLongs.length);
+        for (int i = 0; i < len; i++) {
             LongWritable thisLong = (LongWritable) theseLongs[i];
             LongWritable thatLong = (LongWritable) thoseLongs[i];
-            if (!thisLong.equals(thatLong)) {
-                return thisLong.compareTo(thatLong);
+            int comp = thisLong.compareTo(thatLong);
+            if (comp != 0) {
+                return comp;
             }
         }
         return 0;
