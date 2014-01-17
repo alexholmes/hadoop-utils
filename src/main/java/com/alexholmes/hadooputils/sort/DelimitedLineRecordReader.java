@@ -30,7 +30,6 @@ import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.util.LineReader;
 
 /**
  * Reads a record from a text file. Treats keys as offset in file
@@ -42,7 +41,7 @@ public class DelimitedLineRecordReader implements RecordReader<LongWritable, Tex
     protected long start;
     protected long pos;
     protected long end;
-    protected LineReader in;
+    protected DelimitedLineReader in;
     protected int maxLineLength;
     protected FSDataInputStream fileIn;
 
@@ -67,9 +66,9 @@ public class DelimitedLineRecordReader implements RecordReader<LongWritable, Tex
         String row_delim = job.get("textinputformat.record.delimiter", null);    
         if (codec != null) {
             if (row_delim != null) {
-                in = new LineReader(codec.createInputStream(fileIn), job, row_delim.getBytes());
+                in = new DelimitedLineReader(codec.createInputStream(fileIn), job, row_delim.getBytes());
             } else {
-                in = new LineReader(codec.createInputStream(fileIn), job);
+                in = new DelimitedLineReader(codec.createInputStream(fileIn), job);
             }
             end = Long.MAX_VALUE;
         } else {
@@ -79,9 +78,9 @@ public class DelimitedLineRecordReader implements RecordReader<LongWritable, Tex
                 fileIn.seek(start);
             }
             if (row_delim != null) {
-                in = new LineReader(fileIn, job, row_delim.getBytes());
+                in = new DelimitedLineReader(fileIn, job, row_delim.getBytes());
             } else {
-                in = new LineReader(fileIn, job);
+                in = new DelimitedLineReader(fileIn, job);
             }
         }
         if (skipFirstLine) {  // skip first line and re-establish "start".

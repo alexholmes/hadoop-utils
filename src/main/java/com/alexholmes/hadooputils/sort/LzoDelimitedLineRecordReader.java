@@ -26,7 +26,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.CompressionCodecFactory;
 import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.util.LineReader;
 
 /**
  * Reads a record from an lzo compressed text file. Treats keys as offset in file
@@ -58,9 +57,9 @@ public class LzoDelimitedLineRecordReader extends DelimitedLineRecordReader {
         // creates input stream and also reads the file header
         String row_delim = job.get("textinputformat.record.delimiter", null);    
         if (row_delim != null) {
-            in = new LineReader(codec.createInputStream(fileIn), job, row_delim.getBytes());
+            in = new DelimitedLineReader(codec.createInputStream(fileIn), job, row_delim.getBytes());
         } else {
-            in = new LineReader(codec.createInputStream(fileIn), job);
+            in = new DelimitedLineReader(codec.createInputStream(fileIn), job);
         }
 
         if (start != 0) {

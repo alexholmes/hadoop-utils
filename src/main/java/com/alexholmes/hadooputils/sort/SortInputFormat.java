@@ -56,8 +56,8 @@ public class SortInputFormat extends DeprecatedLzoTextInputFormat
             final Reporter reporter) 
             throws IOException {
         FileSplit fileSplit = (FileSplit) split;
-        reporter.setStatus(split.toString());
         if (LzoInputFormatCommon.isLzoFile(fileSplit.getPath().toString())) {
+            reporter.setStatus(split.toString());
             return new SortRecordReader(conf, new LzoDelimitedLineRecordReader(conf, fileSplit));
         } else {
             return new SortRecordReader(conf, new DelimitedLineRecordReader(conf, fileSplit));
