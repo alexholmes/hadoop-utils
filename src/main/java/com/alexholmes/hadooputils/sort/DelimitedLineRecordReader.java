@@ -63,10 +63,12 @@ public class DelimitedLineRecordReader implements RecordReader<LongWritable, Tex
         FileSystem fs = file.getFileSystem(job);
         fileIn = fs.open(split.getPath());
         boolean skipFirstLine = false;
-        String row_delim = job.get("textinputformat.record.delimiter", null);    
+        String rowDelim = job.get("textinputformat.record.delimiter", null);    
         if (codec != null) {
-            if (row_delim != null) {
-                in = new DelimitedLineReader(codec.createInputStream(fileIn), job, row_delim.getBytes());
+            if (rowDelim != null) {
+                byte[] hexcode = SortConfig.getHexDelimiter(rowDelim);
+                in = new DelimitedLineReader(codec.createInputStream(fileIn), job, 
+                        (hexcode != null) ? hexcode : rowDelim.getBytes());
             } else {
                 in = new DelimitedLineReader(codec.createInputStream(fileIn), job);
             }
@@ -77,8 +79,10 @@ public class DelimitedLineRecordReader implements RecordReader<LongWritable, Tex
                 --start;
                 fileIn.seek(start);
             }
-            if (row_delim != null) {
-                in = new DelimitedLineReader(fileIn, job, row_delim.getBytes());
+            if (rowDelim != null) {
+                byte[] hexcode = SortConfig.getHexDelimiter(rowDelim);
+                in = new DelimitedLineReader(fileIn, job, 
+                        (hexcode != null) ? hexcode : rowDelim.getBytes());
             } else {
                 in = new DelimitedLineReader(fileIn, job);
             }

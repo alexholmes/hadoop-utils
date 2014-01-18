@@ -258,4 +258,17 @@ public class SortConfig {
     public Configuration getConfig() {
         return config;
     }
+
+    public static byte[] getHexDelimiter(String hexcode) {
+        if (hexcode != null) {
+            if (hexcode.startsWith("0x") && (hexcode.length() == 4)) {
+                int dec = Integer.parseInt(hexcode.substring(2), 16);
+                return Character.toString((char) dec).getBytes();
+            } else if (hexcode.startsWith("x") && (hexcode.length() == 3)) {
+                int dec = Integer.parseInt(hexcode.substring(1), 16);
+                return Character.toString((char) dec).getBytes();
+            }
+        }
+        return null;
+    }
 }

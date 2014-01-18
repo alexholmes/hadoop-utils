@@ -122,7 +122,9 @@ public class SortRecordReader implements RecordReader<ArrayWritable, Text> {
             //
             int startIdx = startKey - 1;
 
-            String[] parts = StringUtils.splitByWholeSeparatorPreserveAllTokens(value.toString(), fieldSeparator);
+            byte[] hexcode = SortConfig.getHexDelimiter(fieldSeparator);
+            String[] parts = StringUtils.splitByWholeSeparatorPreserveAllTokens(
+                value.toString(), (hexcode != null) ? new String(hexcode, "UTF-8") : fieldSeparator);
 
             if (startIdx >= parts.length) {
                 throw new IOException("Start index is greater than parts in line");

@@ -107,6 +107,8 @@ public class DelimitedTextOutputFormat<K, V> extends TextOutputFormat<K, V> {
         SortConfig sortConf = new SortConfig(job);
         boolean isCompressed = getCompressOutput(job);
         String lineSeparator = sortConf.getRowSeparator("\n");
+        byte[] hexcode = SortConfig.getHexDelimiter(lineSeparator);
+        lineSeparator = (hexcode != null) ? new String(hexcode, "UTF-8") : lineSeparator;
 
         if (!isCompressed) {
             Path file = FileOutputFormat.getTaskOutputPath(job, name);

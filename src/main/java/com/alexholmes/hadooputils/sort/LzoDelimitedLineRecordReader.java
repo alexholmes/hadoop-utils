@@ -55,9 +55,11 @@ public class LzoDelimitedLineRecordReader extends DelimitedLineRecordReader {
         fileIn = fs.open(split.getPath());
 
         // creates input stream and also reads the file header
-        String row_delim = job.get("textinputformat.record.delimiter", null);    
-        if (row_delim != null) {
-            in = new DelimitedLineReader(codec.createInputStream(fileIn), job, row_delim.getBytes());
+        String rowDelim = job.get("textinputformat.record.delimiter", null);    
+        if (rowDelim != null) {
+                byte[] hexcode = SortConfig.getHexDelimiter(rowDelim);
+                in = new DelimitedLineReader(fileIn, job, 
+                        (hexcode != null) ? hexcode : rowDelim.getBytes());
         } else {
             in = new DelimitedLineReader(codec.createInputStream(fileIn), job);
         }
