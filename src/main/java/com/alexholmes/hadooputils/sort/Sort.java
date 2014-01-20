@@ -29,7 +29,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.mapred.lib.IdentityMapper;
-import org.apache.hadoop.mapred.lib.InputSampler;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -127,7 +126,7 @@ public class Sort<K, V> extends Configured implements Tool {
         Integer numReduceTasks = null;
 
         List<String> otherArgs = new ArrayList<String>();
-        InputSampler.Sampler<K, V> sampler = null;
+        SortInputSampler.Sampler<K, V> sampler = null;
         Class<? extends CompressionCodec> codecClass = null;
         Class<? extends CompressionCodec> mapCodecClass = null;
         boolean createLzopIndex = false;
@@ -162,7 +161,7 @@ public class Sort<K, V> extends Configured implements Tool {
                     if (0 >= maxSplits) {
                         maxSplits = Integer.MAX_VALUE;
                     }
-                    sampler = new InputSampler.RandomSampler<K, V>(pcnt, numSamples, maxSplits);
+                    sampler = new SortInputSampler.RandomSampler<K, V>(pcnt, numSamples, maxSplits);
                 } else if ("--map-codec".equals(args[i])) {
                     mapCodecClass = (Class<? extends CompressionCodec>) Class.forName(args[++i]);
                 } else if ("--codec".equals(args[i])) {
@@ -215,7 +214,7 @@ public class Sort<K, V> extends Configured implements Tool {
      * @throws URISyntaxException if a URI wasn't correctly formed
      */
     public boolean runJob(final JobConf jobConf, final Integer numMapTasks, 
-                          final Integer numReduceTasks, final InputSampler.Sampler<K, V> sampler,
+                          final Integer numReduceTasks, final SortInputSampler.Sampler<K, V> sampler,
                           final Class<? extends CompressionCodec> codecClass,
                           final Class<? extends CompressionCodec> mapCodecClass,
                           final boolean createLzopIndexes,
@@ -289,7 +288,7 @@ public class Sort<K, V> extends Configured implements Tool {
             inputDir = inputDir.makeQualified(inputDir.getFileSystem(jobConf));
             Path partitionFile = new Path(inputDir, "_sortPartitioning");
             TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
-            InputSampler.writePartitionFile(jobConf, sampler);
+            SortInputSampler.writePartitionFile(jobConf, sampler);
             URI partitionUri = new URI(partitionFile.toString()
                     + "#" + "_sortPartitioning");
             DistributedCache.addCacheFile(partitionUri, jobConf);

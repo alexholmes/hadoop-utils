@@ -248,4 +248,23 @@ public class SortTest extends TestBase {
 
         run(new SortConfig(builder.getFs().getConf()).setNumeric(true).setStartKey(3).setEndKey(3).setFieldSeparator("~~").setRowSeparator("@|@"), builder);
     }
+
+    @Test
+    public void runHexSeparator() throws Exception {
+
+        TextIOJobBuilder builder = new TextIOLocalJobBuilder(new Configuration(), TEST_ROOT_DIR)
+                .addInput(
+                    "100"+Character.toString((char) 1)+
+                    "bar"+Character.toString((char) 0)+
+                    "10"+Character.toString((char) 1)+
+                     "me"+Character.toString((char) 0))
+                .addExpectedOutput(
+                    "10"+Character.toString((char) 1)+
+                     "me"+Character.toString((char) 0)+
+                    "100"+Character.toString((char) 1)+
+                    "bar"+Character.toString((char) 0))
+                .writeDelimitedInputs("");
+
+        run(new SortConfig(builder.getFs().getConf()).setStartKey(1).setEndKey(1).setFieldSeparator("0x01").setRowSeparator("0x00"), builder);
+    }
 }
