@@ -46,40 +46,40 @@ import org.apache.hadoop.io.SequenceFile;
 
 public class SortInputSampler<K,V> extends InputSampler<K, V> {
 
-public SortInputSampler(JobConf conf) {
-    super(conf);
-  }
+    public SortInputSampler(JobConf conf) {
+        super(conf);
+    }
 
-  public static <K,V> void writePartitionFile(JobConf job, Sampler<K,V> sampler)
-      throws IOException {
-    Configuration conf = job;
-    // Use the input format defined in the job. NOT, the one provided by
-    // the parent class's writePartitionFile() method, which will be a plain
-    // TextInputFormat, by default
-    final InputFormat inf = job.getInputFormat();
-    int numPartitions = job.getNumReduceTasks();
-    K[] samples = (K[])sampler.getSample(inf, job);
-    RawComparator<K> comparator =
-      (RawComparator<K>) job.getOutputKeyComparator();
-    Arrays.sort(samples, comparator);
-    Path dst = new Path(TotalOrderPartitioner.getPartitionFile(job));
-    FileSystem fs = dst.getFileSystem(conf);
-    if (fs.exists(dst)) {
-      fs.delete(dst, false);
+    public static <K,V> void writePartitionFile(JobConf job, Sampler<K,V> sampler)
+            throws IOException {
+        Configuration conf = job;
+        // Use the input format defined in the job. NOT, the one provided by
+        // the parent class's writePartitionFile() method, which will be a plain
+        // TextInputFormat, by default
+        final InputFormat inf = job.getInputFormat();
+        int numPartitions = job.getNumReduceTasks();
+        K[] samples = (K[])sampler.getSample(inf, job);
+        RawComparator<K> comparator =
+            (RawComparator<K>) job.getOutputKeyComparator();
+        Arrays.sort(samples, comparator);
+        Path dst = new Path(TotalOrderPartitioner.getPartitionFile(job));
+        FileSystem fs = dst.getFileSystem(conf);
+        if (fs.exists(dst)) {
+            fs.delete(dst, false);
+        }
+        SequenceFile.Writer writer = SequenceFile.createWriter(fs, 
+            conf, dst, job.getMapOutputKeyClass(), NullWritable.class);
+        NullWritable nullValue = NullWritable.get();
+        float stepSize = samples.length / (float) numPartitions;
+        int last = -1;
+        for(int i = 1; i < numPartitions; ++i) {
+            int k = Math.round(stepSize * i);
+            while (last >= k && comparator.compare(samples[last], samples[k]) == 0) {
+                ++k;
+            }
+            writer.append(samples[k], nullValue);
+            last = k;
+        }
+        writer.close();
     }
-    SequenceFile.Writer writer = SequenceFile.createWriter(fs, 
-      conf, dst, job.getMapOutputKeyClass(), NullWritable.class);
-    NullWritable nullValue = NullWritable.get();
-    float stepSize = samples.length / (float) numPartitions;
-    int last = -1;
-    for(int i = 1; i < numPartitions; ++i) {
-      int k = Math.round(stepSize * i);
-      while (last >= k && comparator.compare(samples[last], samples[k]) == 0) {
-        ++k;
-      }
-      writer.append(samples[k], nullValue);
-      last = k;
-    }
-    writer.close();
-  }
 }
