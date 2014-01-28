@@ -21,5 +21,4 @@ To get started, simply:
 
 ### To run the bundled utilities
 
-Look at file [CLI.md](https://github.com/alexholmes/hadoop-utils/blob/master/CLI.md) for more details.
-
+Look at file [CLI.md](https://github.com/markcusack/hadoop-utils/blob/master/CLI.md) for more details.
