@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Alex Holmes
+ * Modified work Copyright 2014 Mark Cusack
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,11 +52,15 @@ public class SortInputFormat extends DeprecatedLzoTextInputFormat
 
     @Override
     public RecordReader getRecordReader(
-            final InputSplit genericSplit, final JobConf job,
-            final Reporter reporter)
+            final InputSplit split, final JobConf conf, 
+            final Reporter reporter) 
             throws IOException {
-        reporter.setStatus(genericSplit.toString());
-        return new SortRecordReader(job,
-                super.getRecordReader(genericSplit, job, reporter));
+        FileSplit fileSplit = (FileSplit) split;
+        if (LzoInputFormatCommon.isLzoFile(fileSplit.getPath().toString())) {
+            reporter.setStatus(split.toString());
+            return new SortRecordReader(conf, new LzoDelimitedLineRecordReader(conf, fileSplit));
+        } else {
+            return new SortRecordReader(conf, new DelimitedLineRecordReader(conf, fileSplit));
+        }
     }
 }

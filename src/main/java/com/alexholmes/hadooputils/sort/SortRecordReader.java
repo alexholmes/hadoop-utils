@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Alex Holmes
+ * Modified work Copyright 2014 Mark Cusack
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +18,9 @@
 package com.alexholmes.hadooputils.sort;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.LineRecordReader;
@@ -28,7 +31,7 @@ import java.io.IOException;
 /**
  * A record reader which extracts the sort key, and the entire sort line as the key/value pair.
  */
-public class SortRecordReader implements RecordReader<Text, Text> {
+public class SortRecordReader implements RecordReader<ArrayWritable, Text> {
 
     /**
      * The wrapped {@link RecordReader} used to do the heavy lifting.
@@ -64,7 +67,7 @@ public class SortRecordReader implements RecordReader<Text, Text> {
     }
 
     @Override
-    public boolean next(final Text key, final Text value) throws IOException {
+    public boolean next(final ArrayWritable key, final Text value) throws IOException {
 
         boolean result = reader.next(lineRecordReaderKey, lineRecordReaderValue);
 
@@ -76,7 +79,8 @@ public class SortRecordReader implements RecordReader<Text, Text> {
                 sortConfig.getStartKey(),
                 sortConfig.getEndKey(),
                 sortConfig.getFieldSeparator(null),
-                sortConfig.getIgnoreCase()));
+                sortConfig.getIgnoreCase(),
+                sortConfig.getNumeric()));
         value.set(lineRecordReaderValue);
 
         return true;
@@ -90,24 +94,37 @@ public class SortRecordReader implements RecordReader<Text, Text> {
      * @param endKey         the end key, or null if there isn't one
      * @param fieldSeparator the field separator, used if a start (and optionally end) key are set
      * @param ignoreCase     whether the result should be lower-cased to ensure case is ignored
+     * @param isNumeric      whether the sort keys should be compared numerically
      * @return the key
      * @throws IOException if something goes wrong
      */
-    protected static Text extractKey(final Text value, final Integer startKey,
-                                     final Integer endKey, final String fieldSeparator,
-                                     final boolean ignoreCase) throws IOException {
+    protected static Writable[] extractKey(final Text value, final Integer startKey,
+                                    final Integer endKey, final String fieldSeparator,
+                                    final boolean ignoreCase, final boolean isNumeric) 
+            throws IOException {
 
-        Text result = new Text();
+        Writable[] result = null;
 
         if (startKey == null) {
-            result.set(value);
+            if (isNumeric) {
+                throw new IOException("Sort key must be specified");
+            } else {
+                result = new Text[1];
+                if (ignoreCase) {
+                    result[0] = new Text(value.toString().toLowerCase());
+                } else {
+                    result[0] = new Text(value);
+                }
+            }
         } else {
 
             // startKey is 1-based in the Linux sort, so decrement them to be 0-based
             //
             int startIdx = startKey - 1;
 
-            String[] parts = StringUtils.split(value.toString(), fieldSeparator);
+            byte[] hexcode = SortConfig.getHexDelimiter(fieldSeparator);
+            String[] parts = StringUtils.splitByWholeSeparatorPreserveAllTokens(
+                value.toString(), (hexcode != null) ? new String(hexcode, "UTF-8") : fieldSeparator);
 
             if (startIdx >= parts.length) {
                 throw new IOException("Start index is greater than parts in line");
@@ -125,19 +142,33 @@ public class SortRecordReader implements RecordReader<Text, Text> {
                 }
             }
 
-            result.set(StringUtils.join(parts, fieldSeparator, startIdx, endIdx));
-        }
-
-        if (ignoreCase) {
-            result.set(result.toString().toLowerCase());
+            if (isNumeric) {
+                result = new LongWritable[endIdx - startIdx];
+                for (int i = startIdx; i < endIdx; i++) {
+                        result[i - startIdx] = new LongWritable(Long.parseLong(parts[i]));
+                } 
+            } else {
+                result = new Text[endIdx - startIdx];
+                for (int i = startIdx; i < endIdx; i++) {
+                    if (ignoreCase) {
+                        result[i - startIdx] = new Text(parts[i].toLowerCase());
+                    } else {
+                        result[i - startIdx] = new Text(parts[i]);
+                    }
+                }
+            }
         }
 
         return result;
     }
 
     @Override
-    public Text createKey() {
-        return new Text();
+    public ArrayWritable createKey() {
+        if (sortConfig.getNumeric()) {
+            return new LongArrayWritable();
+        } else {
+            return new TextArrayWritable();
+        }
     }
 
     @Override

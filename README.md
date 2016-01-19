@@ -15,11 +15,10 @@ Apache version 2.0 (for more details look at [LICENSE](https://github.com/alexho
 
 To get started, simply:
 
-1. Download, and run `mvn package`.
+1. Download, and run `mvn package`. You may need to run umask 022 to allow the tests to complete successfully.
 2. Use the generated JAR `target/hadoop-utils-<version>.jar` in your application.
 3. Understand the API's by reading the generated JavaDocs in `target/hadoop-utils-<version>-javadoc.jar`.
 
 ### To run the bundled utilities
 
-Look at file [CLI.md](https://github.com/alexholmes/hadoop-utils/blob/master/CLI.md) for more details.
-
+Look at file [CLI.md](https://github.com/markcusack/hadoop-utils/blob/master/CLI.md) for more details.

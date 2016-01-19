@@ -200,4 +200,71 @@ public class SortTest extends TestBase {
 
         run(new SortConfig(builder.getFs().getConf()).setStartKey(2).setEndKey(2).setFieldSeparator("-"), builder);
     }
+
+    @Test
+    public void runNumeric() throws Exception {
+
+        TextIOJobBuilder builder = new TextIOLocalJobBuilder(new Configuration(), TEST_ROOT_DIR)
+                .addInput("10 foobar")
+                .addInput("2 foobar")
+                .addExpectedOutput("2 foobar")
+                .addExpectedOutput("10 foobar")
+                .writeInputs();
+
+        run(new SortConfig(builder.getFs().getConf()).setNumeric(true).setStartKey(1).setEndKey(1).setFieldSeparator(" "), builder);
+    }
+
+    @Test
+    public void runNumericComposite() throws Exception {
+
+        TextIOJobBuilder builder = new TextIOLocalJobBuilder(new Configuration(), TEST_ROOT_DIR)
+                .addInput("10 10 10 foobar")
+                .addInput("10 10 9 foobar")
+                .addExpectedOutput("10 10 9 foobar")
+                .addExpectedOutput("10 10 10 foobar")
+                .writeInputs();
+
+        run(new SortConfig(builder.getFs().getConf()).setNumeric(true).setStartKey(1).setEndKey(3).setFieldSeparator(" "), builder);
+    }
+
+    @Test
+    public void runRowSeparator() throws Exception {
+
+        TextIOJobBuilder builder = new TextIOLocalJobBuilder(new Configuration(), TEST_ROOT_DIR)
+                .addInput("10 10 10 foobar|10 10 9 foobar|")
+                .addExpectedOutput("10 10 9 foobar|10 10 10 foobar|")
+                .writeDelimitedInputs("");
+
+        run(new SortConfig(builder.getFs().getConf()).setNumeric(true).setStartKey(1).setEndKey(3).setFieldSeparator(" ").setRowSeparator("|"), builder);
+    }
+
+    @Test
+    public void runRowMultiSeparator() throws Exception {
+
+        TextIOJobBuilder builder = new TextIOLocalJobBuilder(new Configuration(), TEST_ROOT_DIR)
+                .addInput("10~~10~~10~~foobar@|@10~~10~~9~~foobar@|@")
+                .addExpectedOutput("10~~10~~9~~foobar@|@10~~10~~10~~foobar@|@")
+                .writeDelimitedInputs("");
+
+        run(new SortConfig(builder.getFs().getConf()).setNumeric(true).setStartKey(3).setEndKey(3).setFieldSeparator("~~").setRowSeparator("@|@"), builder);
+    }
+
+    @Test
+    public void runHexSeparator() throws Exception {
+
+        TextIOJobBuilder builder = new TextIOLocalJobBuilder(new Configuration(), TEST_ROOT_DIR)
+                .addInput(
+                    "100"+Character.toString((char) 1)+
+                    "bar"+Character.toString((char) 0)+
+                    "10"+Character.toString((char) 1)+
+                     "me"+Character.toString((char) 0))
+                .addExpectedOutput(
+                    "10"+Character.toString((char) 1)+
+                     "me"+Character.toString((char) 0)+
+                    "100"+Character.toString((char) 1)+
+                    "bar"+Character.toString((char) 0))
+                .writeDelimitedInputs("");
+
+        run(new SortConfig(builder.getFs().getConf()).setStartKey(1).setEndKey(1).setFieldSeparator("0x01").setRowSeparator("0x00"), builder);
+    }
 }

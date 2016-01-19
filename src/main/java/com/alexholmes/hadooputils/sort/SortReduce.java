@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Alex Holmes
+ * Modified work Copyright 2014 Mark Cusack
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +18,7 @@
 package com.alexholmes.hadooputils.sort;
 
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.ArrayWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.*;
 
@@ -27,7 +29,7 @@ import java.util.Iterator;
  * A reducer which can produce unique key output if configured to do so.
  */
 public class SortReduce extends MapReduceBase
-        implements Reducer<Text, Text, Text, NullWritable> {
+        implements Reducer<ArrayWritable, Text, Text, NullWritable> {
 
     /**
      * The sort config.
@@ -41,7 +43,7 @@ public class SortReduce extends MapReduceBase
     }
 
     @Override
-    public void reduce(final Text key, final Iterator<Text> values,
+    public void reduce(final ArrayWritable key, final Iterator<Text> values,
                        final OutputCollector<Text, NullWritable> output, final Reporter reporter)
             throws IOException {
         while (values.hasNext()) {

@@ -22,6 +22,9 @@ bin/hadoop jar hadoop-utils-<version>.jar com.alexholmes.hadooputils.sort.Sort [
 Ordering options:
 -f, --ignore-case
        Fold lower case to upper case characters.
+-n, --numeric-sort
+       Compare according to string integer value.
+
 
 Other options:
 
@@ -33,8 +36,12 @@ Other options:
        Start a key at POS1 (origin 1), end it at POS2 (default end of line).
 -t, --field-separator SEP
        Use SEP instead of non-blank to blank transition.
+-z, --row-separator SEP
+       End lines with SEP, not newline.
 -u, --unique
        Output only the first of an equal run.
+--task-timeout SECONDS
+       Maximum time in seconds before unresponsive tasks timeout.
 --total-order PCNT NUM_SAMPLES MAX_SPLITS
        Produce total order across all reducer files.
          PCNT = Probability with which a key will be chosen (range 0.0 - 1.0).

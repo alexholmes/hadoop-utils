@@ -19,7 +19,6 @@ package com.alexholmes.hadooputils.sort;
 import com.alexholmes.hadooputils.test.MiniHadoopTestCase;
 import com.alexholmes.hadooputils.test.TextIOJobBuilder;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.lib.InputSampler;
 import org.junit.Test;
 
 public class TotalOrderSortTest extends MiniHadoopTestCase {
@@ -27,7 +26,7 @@ public class TotalOrderSortTest extends MiniHadoopTestCase {
     @Test
     public void test() throws Exception {
 
-        InputSampler.RandomSampler sampler = new InputSampler.RandomSampler(1.0, 6, 1);
+        SortInputSampler.RandomSampler sampler = new SortInputSampler.RandomSampler(1.0, 6, 1);
 
         JobConf jobConf = super.getMiniHadoop().createJobConf();
 
